@@ -105,6 +105,10 @@ func NewResourceProvider(logger *zap.Logger, timeout time.Duration, attributesTo
 	}
 }
 
+func (p *ResourceProvider) Logger() *zap.Logger {
+	return p.logger
+}
+
 func (p *ResourceProvider) Get(ctx context.Context, client *http.Client) (resource pcommon.Resource, schemaURL string, err error) {
 	p.once.Do(func() {
 		var cancel context.CancelFunc

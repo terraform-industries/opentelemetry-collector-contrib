@@ -28,12 +28,12 @@ type resourceDetectionProcessor struct {
 
 // Start is invoked during service startup.
 func (rdp *resourceDetectionProcessor) Start(ctx context.Context, host component.Host) error {
-	fmt.Println("Starting resource detection processor")
+	rdp.provider.Logger().Info("Starting resource detection processor")
 	client, _ := rdp.httpClientSettings.ToClient(ctx, host, rdp.telemetrySettings)
 	ctx = internal.ContextWithClient(ctx, client)
 	var err error
 	rdp.resource, rdp.schemaURL, err = rdp.provider.Get(ctx, client)
-	fmt.Println("Start: rdp.resource", rdp.resource)
+	rdp.provider.Logger().Info(fmt.Sprintf("Start: rdp.resource %v", rdp.resource))
 	return err
 }
 
@@ -44,7 +44,7 @@ func (rdp *resourceDetectionProcessor) processTraces(_ context.Context, td ptrac
 		rss := rs.At(i)
 		rss.SetSchemaUrl(internal.MergeSchemaURL(rss.SchemaUrl(), rdp.schemaURL))
 		res := rss.Resource()
-		fmt.Println("processTraces: rdp.resource", rdp.resource)
+		rdp.provider.Logger().Info(fmt.Sprintf("processTraces: rdp.resource %v", rdp.resource))
 		internal.MergeResource(res, rdp.resource, rdp.override)
 	}
 	return td, nil
