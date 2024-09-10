@@ -182,6 +182,7 @@ func (f *factory) getResourceDetectionProcessor(
 		override:           oCfg.Override,
 		httpClientSettings: oCfg.ClientConfig,
 		telemetrySettings:  params.TelemetrySettings,
+		started:            false,
 	}, nil
 }
 

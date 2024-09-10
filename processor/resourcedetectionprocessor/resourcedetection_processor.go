@@ -24,27 +24,30 @@ type resourceDetectionProcessor struct {
 	override           bool
 	httpClientSettings confighttp.ClientConfig
 	telemetrySettings  component.TelemetrySettings
+	started            bool
 }
 
 // Start is invoked during service startup.
 func (rdp *resourceDetectionProcessor) Start(ctx context.Context, host component.Host) error {
-	rdp.provider.Logger().Info("Starting resource detection processor")
+	rdp.provider.Logger().Info("$$ Starting resource detection processor")
 	client, _ := rdp.httpClientSettings.ToClient(ctx, host, rdp.telemetrySettings)
 	ctx = internal.ContextWithClient(ctx, client)
 	var err error
 	rdp.resource, rdp.schemaURL, err = rdp.provider.Get(ctx, client)
-	rdp.provider.Logger().Info(fmt.Sprintf("Start: rdp.resource %v", rdp.resource))
+	rdp.provider.Logger().Info(fmt.Sprintf("$$ Start: rdp.resource %v", rdp.resource))
+	rdp.started = true
 	return err
 }
 
 // processTraces implements the ProcessTracesFunc type.
 func (rdp *resourceDetectionProcessor) processTraces(_ context.Context, td ptrace.Traces) (ptrace.Traces, error) {
 	rs := td.ResourceSpans()
+	rdp.provider.Logger().Info(fmt.Sprintf("$$ processTraces: started %v", rdp.started))
 	for i := 0; i < rs.Len(); i++ {
 		rss := rs.At(i)
 		rss.SetSchemaUrl(internal.MergeSchemaURL(rss.SchemaUrl(), rdp.schemaURL))
 		res := rss.Resource()
-		rdp.provider.Logger().Info(fmt.Sprintf("processTraces: rdp.resource %v", rdp.resource))
+		rdp.provider.Logger().Info(fmt.Sprintf("$$ processTraces: started %v, rdp.resource %v", rdp.started, rdp.resource))
 		internal.MergeResource(res, rdp.resource, rdp.override)
 	}
 	return td, nil
